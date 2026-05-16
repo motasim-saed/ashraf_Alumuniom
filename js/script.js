@@ -195,9 +195,9 @@ async function renderProducts() {
                     <div class="product-grid">
                         ${catProducts.map(p => `
                             <div class="product-card reveal-item">
-                                <div class="media-wrapper">
+                                <div class="media-wrapper ${p.media_type === 'video' ? 'is-video' : ''}" style="background: #000;">
                                     ${p.media_type === 'video' 
-                                        ? `<video src="${p.media_url}" controls class="product-media" style="width:100%; height:100%; object-fit:cover; z-index: 5; position: relative;"></video>` 
+                                        ? `<video src="${p.media_url}" autoplay muted loop playsinline preload="auto" class="product-media" style="width:100%; height:100%; object-fit:cover; position: relative; z-index: 10; background: #000;"></video>` 
                                         : `<img src="${p.media_url}" alt="${p.title}" class="product-media" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`}
                                 </div>
                                 <div class="product-info">
