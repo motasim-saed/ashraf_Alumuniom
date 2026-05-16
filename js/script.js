@@ -213,7 +213,7 @@ async function renderProducts() {
                                         : `<img src="${p.media_url}" alt="${p.title}" class="product-media" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`}
                                 </div>
                                 <div class="product-info">
-                                    <h3 class="product-title">${p.title}</h3>
+                                  
                                     <p class="product-desc">${p.description || 'جودة واتقان في العمل وتصاميم عصرية تناسب احتياجاتكم'}</p>
                                     <div class="price-container">
                                         ${(p.new_price !== undefined && p.new_price !== null && p.new_price !== '') 
