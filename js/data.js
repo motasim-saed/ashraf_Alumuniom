@@ -39,14 +39,29 @@ async function fetchProducts() {
 }
 
 /**
- * Upload file to Appwrite Storage with Progress
+ * Upload file to Appwrite Storage with Intelligent Compression
  */
 async function uploadFile(file, onProgress) {
+    let fileToUpload = file;
+
     try {
+        // 1. Intelligent Compression for Images
+        if (file.type.startsWith('image/')) {
+            console.log('جاري ضغط الصورة...');
+            fileToUpload = await compressImage(file);
+        }
+        
+        // 2. Logging for Videos
+        if (file.type.startsWith('video/')) {
+            console.log('جاري معالجة الفيديو للرفع...');
+            // ملاحظة: ضغط الفيديو يتطلب FFmpeg.wasm وهو ثقيل جداً للمتصفح
+            // حالياً نقوم برفعه مباشرة مع ضمان أفضل أداء
+        }
+
         const response = await storage.createFile(
             config.BUCKET_ID,
             Appwrite.ID.unique(),
-            file,
+            fileToUpload,
             [], // Permissions
             (progress) => {
                 if (onProgress) {
@@ -61,6 +76,60 @@ async function uploadFile(file, onProgress) {
         console.error('Upload Error:', error);
         throw new Error('فشل الرفع: ' + (error.message || 'خطأ في الشبكة'));
     }
+}
+
+/**
+ * Helper function to compress images using Canvas
+ */
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // تقليل الأبعاد إذا كانت ضخمة جداً (أكبر من 1920 بكسل) مع الحفاظ على النسبة
+                const max_size = 1920;
+                if (width > height) {
+                    if (width > max_size) {
+                        height *= max_size / width;
+                        width = max_size;
+                    }
+                } else {
+                    if (height > max_size) {
+                        width *= max_size / height;
+                        height = max_size;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // التحويل إلى WebP بجودة 85% (توازن ممتاز بين الحجم والدقة)
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        // إعادة تسمية الملف ليكون بامتداد webp
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp',
+                            lastModified: Date.now()
+                        });
+                        resolve(compressedFile);
+                    } else {
+                        resolve(file); // فشل الضغط، ارفع الأصلي
+                    }
+                }, 'image/webp', 0.85);
+            };
+            img.onerror = () => resolve(file);
+        };
+        reader.onerror = () => resolve(file);
+    });
 }
 
 /**

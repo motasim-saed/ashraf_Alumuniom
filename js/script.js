@@ -18,10 +18,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 // تم نقل التصنيفات إلى config.js لتكون مشتركة بين المستخدم والإدارة
 
 /**
- * Initialize Hero Swiper
+ * Initialize Hero Swiper with Video Logic
  */
 function initHeroSwiper() {
-    new Swiper(".hero-cards-swiper", {
+    const swiper = new Swiper(".hero-cards-swiper", {
         effect: "coverflow",
         grabCursor: true,
         centeredSlides: true,
@@ -39,11 +39,49 @@ function initHeroSwiper() {
             clickable: true,
         },
         autoplay: {
-            delay: 4000,
+            delay: 5000,
             disableOnInteraction: false,
         },
         slideToClickedSlide: true,
+        on: {
+            init: function () {
+                handleSwiperVideo(this);
+            },
+            slideChange: function () {
+                handleSwiperVideo(this);
+            }
+        }
     });
+}
+
+/**
+ * Handle synchronization between Swiper and Video playback
+ */
+function handleSwiperVideo(swiper) {
+    const activeSlide = swiper.slides[swiper.activeIndex];
+    const video = activeSlide.querySelector('video');
+
+    // Reset all videos in swiper to start
+    document.querySelectorAll('.hero-cards-swiper video').forEach(v => {
+        if (v !== video) {
+            v.pause();
+            v.currentTime = 0;
+        }
+    });
+
+    if (video) {
+        // If it's a video slide, stop autoplay and wait for video to end
+        swiper.autoplay.stop();
+        video.play().catch(() => {});
+        
+        video.onended = () => {
+            swiper.autoplay.start();
+            swiper.slideNext();
+        };
+    } else {
+        // If it's an image, use normal autoplay delay
+        swiper.autoplay.start();
+    }
 }
 
 /**
@@ -232,24 +270,26 @@ async function renderProducts() {
                 `;
                 container.appendChild(section);
                 
-                // Add click listener to show/hide order button
-                const grid = section.querySelector('.product-grid');
-                if (grid) {
-                    grid.addEventListener('click', (e) => {
-                        const card = e.target.closest('.product-card');
-                        if (card) {
-                            // Prevent toggle if clicking the order button
-                            if (e.target.closest('.btn-order')) return;
-                            
-                            if (card.classList.contains('active')) {
-                                card.classList.remove('active');
-                            } else {
-                                document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
-                                card.classList.add('active');
-                            }
+                // Add hover/click listeners for videos
+                const productCards = section.querySelectorAll('.product-card');
+                productCards.forEach(card => {
+                    const video = card.querySelector('video');
+                    if (video) {
+                        card.addEventListener('mouseenter', () => video.play());
+                        card.addEventListener('mouseleave', () => video.pause());
+                    }
+
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('.btn-order')) return;
+                        
+                        if (card.classList.contains('active')) {
+                            card.classList.remove('active');
+                        } else {
+                            document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
+                            card.classList.add('active');
                         }
                     });
-                }
+                });
             }
         });
         
