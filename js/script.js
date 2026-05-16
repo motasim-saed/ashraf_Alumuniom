@@ -251,7 +251,7 @@ function closeModal() {
 }
 
 function sendOrder(platform) {
-    const phoneNumber = "+967771511800";
+    const phoneNumber = "+967777729569";
     const message = `مرحباً، أرغب في طلب المنتج التالي:\n\nالمنتج: ${currentOrder.title}\nالسعر: ${currentOrder.price}\nالرابط: ${currentOrder.image}`;
 
     let url = '';
