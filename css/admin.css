@@ -4,6 +4,12 @@
     margin: 0 auto;
 }
 
+nav {
+    background: var(--primary) !important;
+    border-bottom: 1px solid var(--glass-border);
+    padding: 0.8rem 0;
+}
+
 .admin-tabs {
     display: flex;
     gap: 10px;

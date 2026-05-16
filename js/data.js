@@ -49,8 +49,7 @@ async function uploadFile(file, onProgress) {
             [], // Permissions
             (progress) => {
                 if (onProgress) {
-                    const percent = Math.round((progress.loaded / progress.total) * 100);
-                    onProgress(percent);
+                    onProgress(Math.round(progress.progress));
                 }
             }
         );

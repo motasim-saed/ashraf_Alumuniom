@@ -90,7 +90,13 @@ async function handleSlideSubmit() {
 
         document.getElementById('add-slide-form').reset();
         btn.innerText = 'إضافة للبنر';
-        progressContainer.classList.add('hidden');
+        
+        // تأخير بسيط ليتمكن المستخدم من رؤية اكتمال التحميل
+        setTimeout(() => {
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }, 1000);
+
         await renderAdminSlides();
     } catch (error) {
         alert('خطأ: ' + error.message);
@@ -204,7 +210,7 @@ async function renderAdminProducts() {
                     : `<img src="${p.media_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">`}
             </td>
             <td data-label="الاسم">${p.title}</td>
-            <td data-label="التصنيف">${p.category}</td>
+            <td data-label="التصنيف">${config.CATEGORIES[p.category] || p.category}</td>
             <td data-label="السعر">${p.new_price || p.old_price}</td>
             <td data-label="إجراءات">
                 <button class="btn-edit" style="color: #3b82f6; margin-left: 15px; border:none; background:none; cursor:pointer;" onclick="editProduct('${p.id}', '${p.title}', '${p.description}', '${p.category}', '${p.old_price}', '${p.new_price}', '${p.media_type}')">
@@ -286,7 +292,13 @@ async function handleSubmit() {
 
         document.getElementById('add-product-form').reset();
         btn.innerText = 'إضافة المنتج';
-        progressContainer.classList.add('hidden');
+        
+        // تأخير بسيط ليتمكن المستخدم من رؤية اكتمال التحميل
+        setTimeout(() => {
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }, 1000);
+
         await renderAdminProducts();
     } catch (error) {
         alert('حدث خطأ: ' + error.message);

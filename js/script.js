@@ -12,14 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initRevealAnimations();
 });
 
-const categoryTitles = {
-    kitchen: "المطابخ",
-    interface: "الواجهات",
-    window: "الشبابيك",
-    door: "الأبواب",
-    library: "المكاتب",
-    work: "أعمالنا"
-};
+// تم نقل التصنيفات إلى config.js لتكون مشتركة بين المستخدم والإدارة
 
 /**
  * Initialize Hero Swiper
@@ -78,7 +71,7 @@ async function renderHeroSlides() {
                         <h2>${s.title}</h2>
                         ${s.category_link ? `
                             <a href="#${s.category_link}" class="slide-btn">
-                                عرض ${categoryTitles[s.category_link] || 'القسم'} <i class="fas fa-chevron-left"></i>
+                                عرض ${config.CATEGORIES[s.category_link] || 'القسم'} <i class="fas fa-chevron-left"></i>
                             </a>
                         ` : ''}
                     </div>
@@ -140,7 +133,7 @@ function updateNavigation(activeCategories) {
     const adminLink = `<li><a href="admin.html" class="admin-link"><i class="fas fa-lock"></i> الإدارة</a></li>`;
     
     const dynamicLinks = activeCategories.map(cat => {
-        return `<li><a href="#${cat}">${categoryTitles[cat] || cat}</a></li>`;
+        return `<li><a href="#${cat}">${config.CATEGORIES[cat] || cat}</a></li>`;
     }).join('');
 
     navUl.innerHTML = homeLink + dynamicLinks + adminLink;
@@ -182,7 +175,7 @@ async function renderProducts() {
         }
 
         // Get unique categories from products that are in our titles list
-        const activeCategories = [...new Set(products.map(p => p.category))].filter(cat => categoryTitles[cat]);
+        const activeCategories = [...new Set(products.map(p => p.category))].filter(cat => config.CATEGORIES[cat]);
         
         // Sort categories to maintain a consistent order if desired
         const order = ['kitchen', 'interface', 'window', 'door', 'library', 'work'];
@@ -198,7 +191,7 @@ async function renderProducts() {
                 section.id = cat;
                 section.className = 'category-container reveal';
                 section.innerHTML = `
-                    <h2 class="section-title">${categoryTitles[cat]}</h2>
+                    <h2 class="section-title">${config.CATEGORIES[cat]}</h2>
                     <div class="product-grid">
                         ${catProducts.map(p => `
                             <div class="product-card reveal-item">
