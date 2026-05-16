@@ -370,12 +370,18 @@ function closeModal() {
 
 function sendOrder(platform) {
     const phoneNumber = "+967777729569";
-    const message = `مرحباً، أرغب في طلب المنتج التالي:\n\nالمنتج: ${currentOrder.title}\nالسعر: ${currentOrder.price}\nالرابط: ${currentOrder.image}`;
+    let message = "";
+    let url = "";
 
-    let url = '';
     if (platform === 'whatsapp') {
+        // تنسيق خاص للواتساب لزيادة فرص ظهور معاينة الصورة
+        message = `*طلب منتج جديد* 📦\n\n` +
+                  `*المنتج:* ${currentOrder.title}\n` +
+                  `*السعر:* ${currentOrder.price}\n\n` +
+                  `رابط المعاينة:\n${currentOrder.image}`;
         url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     } else if (platform === 'telegram') {
+        message = `مرحباً، أرغب في طلب المنتج التالي:\n\nالمنتج: ${currentOrder.title}\nالسعر: ${currentOrder.price}\nالرابط: ${currentOrder.image}`;
         url = `https://t.me/motasim771?text=${encodeURIComponent(message)}`;
     }
 
