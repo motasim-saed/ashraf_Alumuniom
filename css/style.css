@@ -776,20 +776,36 @@ footer {
     .slide-btn { padding: 8px 15px; font-size: 0.8rem; }
 
     /* Product Grid & Cards Mobile */
+    #product-container {
+        padding: 50px 0; /* Reduced margins */
+    }
+
     .product-grid {
         grid-template-columns: 1fr;
         gap: 20px;
-        padding: 0 10px;
+        padding: 0 15px; /* Ensure cards have padding since container doesn't */
     }
 
     .category-container {
-        margin-bottom: 60px;
-        padding: 0 10px;
+        margin-bottom: 45px;
+        padding: 0; /* Remove padding so title stretches full width */
     }
 
     .section-title {
         margin-bottom: 2rem;
-        font-size: 2.2rem;
+        font-size: 2rem;
+        background: linear-gradient(90deg, rgba(197, 160, 89, 0.25), rgba(26, 26, 26, 0.5));
+        border-right: 6px solid var(--accent);
+        color: var(--text-main);
+        padding: 15px 20px;
+        width: 100%;
+        display: block;
+        text-align: right;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .section-title::after {
+        display: none; /* Hide the center underline on mobile */
     }
     
     .product-card {

@@ -65,7 +65,11 @@ async function renderHeroSlides() {
             <div class="swiper-slide">
                 <div class="slide-card">
                     ${s.media_type === 'video' 
-                        ? `<video src="${s.media_url}" autoplay muted loop playsinline class="slide-video-bg"></video>` 
+                        ? `<div style="width:100%; height:100%; position:relative;">
+                               <video src="${s.media_url}" autoplay muted loop playsinline class="slide-video-bg"></video>
+                               <button onclick="toggleVideoMute(this, event)" style="position:absolute; bottom:20px; right:20px; z-index:30; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'"><i class="fas fa-volume-mute"></i></button>
+                           </div>` 
+
                         : `<div class="slide-image" style="background-image: url('${s.media_url}');"></div>`}
                     <div class="slide-overlay">
                         <h2>${s.title}</h2>
@@ -82,6 +86,13 @@ async function renderHeroSlides() {
     
     // Initialize swiper AFTER slides are added to DOM
     initHeroSwiper();
+
+    // Explicitly play any videos in the slides
+    const videos = wrapper.querySelectorAll('video');
+    videos.forEach(video => {
+        video.muted = true;
+        video.play().catch(err => console.log("Video play failed:", err));
+    });
 }
 
 /**
@@ -195,9 +206,10 @@ async function renderProducts() {
                     <div class="product-grid">
                         ${catProducts.map(p => `
                             <div class="product-card reveal-item">
-                                <div class="media-wrapper ${p.media_type === 'video' ? 'is-video' : ''}" style="background: #000;">
+                                <div class="media-wrapper ${p.media_type === 'video' ? 'is-video' : ''}" style="background: #000; position:relative;">
                                     ${p.media_type === 'video' 
-                                        ? `<video src="${p.media_url}" autoplay muted loop playsinline preload="auto" class="product-media" style="width:100%; height:100%; object-fit:cover; position: relative; z-index: 10; background: #000;"></video>` 
+                                        ? `<video src="${p.media_url}" autoplay muted loop playsinline preload="auto" class="product-media" style="width:100%; height:100%; object-fit:cover; position: relative; z-index: 10; background: #000;"></video>
+                                           <button onclick="toggleVideoMute(this, event)" style="position:absolute; bottom:15px; right:15px; z-index:30; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'"><i class="fas fa-volume-mute"></i></button>` 
                                         : `<img src="${p.media_url}" alt="${p.title}" class="product-media" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`}
                                 </div>
                                 <div class="product-info">
@@ -232,6 +244,13 @@ async function renderProducts() {
         
         // Re-init reveal animations for newly added elements
         initRevealAnimations();
+
+        // Explicitly play any videos in the products
+        const videos = container.querySelectorAll('video');
+        videos.forEach(video => {
+            video.muted = true;
+            video.play().catch(err => console.log("Video play failed:", err));
+        });
 
     } catch (error) {
         // console.error("Render Error:", error);
@@ -292,4 +311,26 @@ style.textContent = `
     .reveal.revealed { opacity: 1; transform: translateY(0); }
 `;
 document.head.appendChild(style);
+
+// Toggle Video Mute Function
+window.toggleVideoMute = function(btn, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    const container = btn.parentElement;
+    const video = container.querySelector('video');
+    if (video) {
+        video.muted = !video.muted;
+        const icon = btn.querySelector('i');
+        if (video.muted) {
+            icon.classList.remove('fa-volume-up');
+            icon.classList.add('fa-volume-mute');
+        } else {
+            icon.classList.remove('fa-volume-mute');
+            icon.classList.add('fa-volume-up');
+        }
+    }
+};
+
 
