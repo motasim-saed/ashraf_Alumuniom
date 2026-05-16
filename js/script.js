@@ -197,7 +197,7 @@ async function renderProducts() {
                             <div class="product-card reveal-item">
                                 <div class="media-wrapper">
                                     ${p.media_type === 'video' 
-                                        ? `<video src="${p.media_url}" controls class="product-media"></video>` 
+                                        ? `<video src="${p.media_url}" controls class="product-media" style="width:100%; height:100%; object-fit:cover; z-index: 5; position: relative;"></video>` 
                                         : `<img src="${p.media_url}" alt="${p.title}" class="product-media" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`}
                                 </div>
                                 <div class="product-info">

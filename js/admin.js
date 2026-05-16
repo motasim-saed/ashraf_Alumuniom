@@ -21,6 +21,30 @@ document.addEventListener('DOMContentLoaded', () => {
             await handleSlideSubmit();
         });
     }
+
+    // التعرف التلقائي على نوع الملف (منتجات)
+    const pFileInput = document.getElementById('p-file');
+    if (pFileInput) {
+        pFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const type = file.type.startsWith('video') ? 'video' : 'image';
+                document.getElementById('p-media-type').value = type;
+            }
+        });
+    }
+
+    // التعرف التلقائي على نوع الملف (بنر)
+    const sFileInput = document.getElementById('s-file');
+    if (sFileInput) {
+        sFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const type = file.type.startsWith('video') ? 'video' : 'image';
+                document.getElementById('s-media-type').value = type;
+            }
+        });
+    }
 });
 
 function switchTab(tab) {
@@ -206,7 +230,7 @@ async function renderAdminProducts() {
         tr.innerHTML = `
             <td data-label="الصورة">
                 ${p.media_type === 'video' 
-                    ? `<i class="fas fa-video"></i>` 
+                    ? `<div style="width: 50px; height: 50px; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 5px;"><i class="fas fa-video" style="color: white;"></i></div>` 
                     : `<img src="${p.media_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">`}
             </td>
             <td data-label="الاسم">${p.title}</td>
