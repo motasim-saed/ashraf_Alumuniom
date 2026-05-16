@@ -288,36 +288,23 @@ async function renderMaterials() {
         section.className = 'category-container reveal';
         section.innerHTML = `
             <h2 class="section-title">خامات الألمنيوم</h2>
-            <div class="materials-table-wrapper" style="overflow-x: auto; padding: 0 15px;">
-                <table class="materials-table" style="width: 100%; border-collapse: separate; border-spacing: 0; background: var(--secondary); border-radius: 20px; overflow: hidden; border: 1px solid var(--glass-border); box-shadow: var(--shadow);">
-                    <thead>
-                        <tr style="background: var(--primary);">
-                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent); width: 80px;">الصورة</th>
-                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent);">اسم الخامة</th>
-                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent);">النوع</th>
-                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent);">السعر (للمتر)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${materials.map((m, index) => `
-                            <tr style="background: ${index % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.2)'}; transition: background 0.3s;" onmouseover="this.style.background='rgba(197, 160, 89, 0.1)'" onmouseout="this.style.background='${index % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.2)'}'">
-                                <td style="padding: 10px 20px; border-bottom: 1px solid var(--glass-border);">
-                                    ${m.media_url ? `<img src="${m.media_url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);" alt="${m.name}">` : `<div style="width: 60px; height: 60px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);"><i class="fas fa-image"></i></div>`}
-                                </td>
-                                <td style="padding: 15px 20px; font-weight: 700; border-bottom: 1px solid var(--glass-border);">${m.name}</td>
-                                <td style="padding: 15px 20px; color: var(--text-muted); border-bottom: 1px solid var(--glass-border);">${m.type || '-'}</td>
-                                <td style="padding: 15px 20px; border-bottom: 1px solid var(--glass-border);">
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        ${(m.new_price !== undefined && m.new_price !== null && m.new_price !== '') 
-                                            ? `<span style="color: rgba(255,255,255,0.3); text-decoration: line-through; font-size: 1rem;">${m.old_price}</span>
-                                               <span style="color: var(--accent); font-weight: 900; font-size: 1.3rem;">${m.new_price}</span>` 
-                                            : `<span style="color: var(--accent); font-weight: 900; font-size: 1.3rem;">${m.old_price}</span>`}
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            <div class="materials-grid">
+                ${materials.map((m, index) => `
+                    <div class="material-card reveal-item" style="animation-delay: ${index * 0.1}s;">
+                        <div class="m-card-image">
+                            ${m.media_url ? `<img src="${m.media_url}" alt="${m.name}" loading="lazy">` : `<div class="m-placeholder"><i class="fas fa-image"></i></div>`}
+                        </div>
+                        <div class="m-card-content">
+                            <h3 class="m-card-title">${m.name}</h3>
+                            <p class="m-card-type">${m.type || 'غير محدد'}</p>
+                            <div class="m-card-price">
+                                ${(m.new_price !== undefined && m.new_price !== null && m.new_price !== '') 
+                                    ? `<span class="m-price-old">${m.old_price}</span> <span class="m-price-new">${m.new_price}</span>` 
+                                    : `<span class="m-price-new">${m.old_price}</span>`}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         `;
         container.appendChild(section);
@@ -375,12 +362,32 @@ function initRevealAnimations() {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
-// Global Spin Animation for loader
+// Global Spin Animation for loader and Reveal Animations
 const style = document.createElement('style');
 style.textContent = `
     @keyframes spin { 100% { transform: rotate(360deg); } }
-    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
-    .reveal.revealed { opacity: 1; transform: translateY(0); }
+    
+    /* Reveal Animation for scroll */
+    .reveal { 
+        opacity: 0; 
+        transform: translateY(40px) scale(0.95); 
+        transition: all 0.8s cubic-bezier(0.5, 1.5, 0.4, 1); 
+    }
+    .reveal.revealed { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+
+    /* Staggered items reveal */
+    .reveal-item {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s cubic-bezier(0.5, 1.5, 0.4, 1);
+    }
+    .reveal.revealed .reveal-item {
+        opacity: 1;
+        transform: translateY(0);
+    }
 `;
 document.head.appendChild(style);
 
