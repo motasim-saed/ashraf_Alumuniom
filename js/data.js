@@ -182,3 +182,64 @@ async function deleteSlideFromDB(id, fileId) {
         return false;
     }
 }
+
+/**
+ * Fetch all materials from Appwrite
+ */
+async function fetchMaterials() {
+    try {
+        const response = await databases.listDocuments(
+            config.DATABASE_ID,
+            config.MATERIALS_COLLECTION_ID
+        );
+        
+        return response.documents.map(doc => ({
+            id: doc.$id,
+            name: doc.name,
+            type: doc.type,
+            old_price: doc.old_price,
+            new_price: doc.new_price,
+            media_url: doc.media_url,
+            file_id: doc.file_id
+        }));
+    } catch (error) {
+        return [];
+    }
+}
+
+/**
+ * Add a new material to Appwrite
+ */
+async function addMaterialToDB(material) {
+    try {
+        const response = await databases.createDocument(
+            config.DATABASE_ID,
+            config.MATERIALS_COLLECTION_ID,
+            Appwrite.ID.unique(),
+            material
+        );
+        return response.$id;
+    } catch (error) {
+        alert('فشل إضافة الخامة: ' + error.message);
+        return null;
+    }
+}
+
+/**
+ * Delete a material from Appwrite
+ */
+async function deleteMaterialFromDB(id, fileId) {
+    try {
+        await databases.deleteDocument(
+            config.DATABASE_ID,
+            config.MATERIALS_COLLECTION_ID,
+            id
+        );
+        if (fileId) {
+            await storage.deleteFile(config.BUCKET_ID, fileId);
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}

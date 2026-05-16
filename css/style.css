@@ -335,7 +335,7 @@ nav.scrolled {
     background: linear-gradient(145deg, #222, #111);
     border-radius: 30px;
     overflow: hidden;
-    border: 1px solid rgba(197, 160, 89, 0.2);
+    border: 2px solid var(--accent);
     transition: var(--transition);
     position: relative;
     box-shadow: 0 15px 35px rgba(0,0,0,0.5);
@@ -355,14 +355,7 @@ nav.scrolled {
 }
 
 .media-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(to top, rgba(17,17,17,1), transparent);
-    pointer-events: none; /* يسمح بالضغط من خلاله */
+    display: none; /* Removed gradient since text no longer overlaps image */
 }
 
 .media-wrapper.is-video::after {
@@ -383,10 +376,10 @@ nav.scrolled {
 }
 
 .product-info {
-    padding: 2.5rem;
+    padding: 1.5rem;
     background: transparent;
     position: relative;
-    margin-top: -60px;
+    margin-top: 0;
     z-index: 2;
 }
 
@@ -432,7 +425,7 @@ nav.scrolled {
 }
 
 .btn-order {
-    display: block;
+    display: none;
     width: 100%;
     padding: 1.4rem;
     background: linear-gradient(90deg, var(--accent), #8e6d2e);
@@ -445,6 +438,17 @@ nav.scrolled {
     font-size: 1.1rem;
     transition: var(--transition);
     box-shadow: 0 10px 20px rgba(197, 160, 89, 0.2);
+    margin-top: 15px;
+}
+
+.product-card.active .btn-order {
+    display: block;
+    animation: fadeInOrderBtn 0.3s ease forwards;
+}
+
+@keyframes fadeInOrderBtn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .btn-order:hover {
@@ -738,9 +742,9 @@ footer {
     margin-bottom: 1rem;
     font-weight: 900;
     background: linear-gradient(to right, var(--accent), #fff);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
 .hero-sub-text {
@@ -792,7 +796,7 @@ footer {
     }
 
     .section-title {
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         font-size: 2rem;
         background: linear-gradient(90deg, rgba(197, 160, 89, 0.25), rgba(26, 26, 26, 0.5));
         border-right: 6px solid var(--accent);
@@ -810,13 +814,14 @@ footer {
     
     .product-card {
         height: auto;
-        min-height: 300px;
+        min-height: 250px;
         border-radius: 25px;
         background: #000;
+        border: 2px solid var(--accent);
     }
 
     .media-wrapper {
-        height: 350px;
+        height: 220px;
     }
 
     .media-wrapper::after {
@@ -824,7 +829,7 @@ footer {
     }
 
     .product-info {
-        padding: 15px;
+        padding: 10px 15px 15px; /* Less padding on top, comfortable on bottom */
         position: relative; /* Move text below the image instead of overlapping */
         background: transparent;
         width: 100%;
@@ -844,7 +849,7 @@ footer {
     }
 
     .price-container {
-        margin-bottom: 12px;
+        margin-bottom: 0;
     }
 
     .price-new {
@@ -857,10 +862,10 @@ footer {
     /* THE FIX: Ensure button is hidden by default on mobile */
     .btn-order {
         display: none !important; /* Force hide by default */
-        padding: 10px 20px;
-        font-size: 0.95rem;
+        padding: 8px 18px; /* Slightly smaller button */
+        font-size: 0.9rem; /* Smaller font */
         width: fit-content;
-        margin: 0 auto;
+        margin: 10px auto 0; /* Only top margin so it doesn't take space below */
         border-radius: 12px;
     }
 

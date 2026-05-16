@@ -39,6 +39,7 @@
         <div class="admin-tabs">
             <button class="tab-btn active" onclick="switchTab('products')">إدارة المنتجات</button>
             <button class="tab-btn" onclick="switchTab('slides')">إدارة بنر الصور (Hero)</button>
+            <button class="tab-btn" onclick="switchTab('materials')">إدارة الخامات</button>
         </div>
 
         <!-- Products Section -->
@@ -173,6 +174,64 @@
                     </thead>
                     <tbody id="admin-slide-list">
                         <!-- Slides will be listed here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Materials Section -->
+        <div id="materials-tab" class="tab-content hidden">
+            <div class="admin-form">
+                <h3>إضافة خامة ألمنيوم</h3>
+                <form id="add-material-form">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>اسم الخامة</label>
+                            <input type="text" id="m-name" placeholder="مثلاً: ألمنيوم عماني" required>
+                        </div>
+                        <div class="form-group">
+                            <label>النوع</label>
+                            <input type="text" id="m-type" placeholder="مثلاً: دبل جلاس 12 ملم">
+                        </div>
+                    </div>
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>السعر القديم (مطلوب)</label>
+                            <input type="text" id="m-old-price" placeholder="مثلاً: 120$" required>
+                        </div>
+                        <div class="form-group">
+                            <label>السعر الجديد (اختياري - يظهر كخصم)</label>
+                            <input type="text" id="m-new-price" placeholder="مثلاً: 100$">
+                        </div>
+                    </div>
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>اختيار صورة للخامة (اختياري)</label>
+                            <input type="file" id="m-file" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="progress-wrapper hidden" id="m-progress-container">
+                        <div class="progress-bar" id="m-progress-bar"></div>
+                        <span id="m-progress-text">0%</span>
+                    </div>
+                    <button type="submit" class="btn-add" id="btn-add-material">إضافة الخامة</button>
+                </form>
+            </div>
+
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>الاسم</th>
+                            <th>النوع</th>
+                            <th>السعر القديم</th>
+                            <th>السعر الجديد</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-material-list">
+                        <!-- Materials will be listed here -->
                     </tbody>
                 </table>
             </div>

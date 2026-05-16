@@ -2,6 +2,7 @@
 const ADMIN_PASSWORD = "124";
 let editId = null;
 let editSlideId = null;
+let editMaterialId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
@@ -19,6 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
         slideForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             await handleSlideSubmit();
+        });
+    }
+
+    const materialForm = document.getElementById('add-material-form');
+    if (materialForm) {
+        materialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleMaterialSubmit();
         });
     }
 
@@ -56,6 +65,7 @@ function switchTab(tab) {
 
     if (tab === 'products') renderAdminProducts();
     if (tab === 'slides') renderAdminSlides();
+    if (tab === 'materials') renderAdminMaterials();
 }
 
 async function handleSlideSubmit() {
@@ -356,4 +366,136 @@ async function handleDelete(id, fileId) {
             alert('فشل الحذف، حاول مرة أخرى');
         }
     }
+}
+
+async function handleMaterialSubmit() {
+    const btn = document.getElementById('btn-add-material');
+    const name = document.getElementById('m-name').value;
+    const type = document.getElementById('m-type').value;
+    const oldPriceVal = document.getElementById('m-old-price').value;
+    const newPriceVal = document.getElementById('m-new-price').value;
+
+    const oldPrice = parseFloat(oldPriceVal) || 0;
+    const newPrice = parseFloat(newPriceVal) || 0;
+
+    if (newPriceVal && newPrice >= oldPrice) {
+        alert('خطأ: السعر الجديد يجب أن يكون أقل من السعر القديم');
+        return;
+    }
+
+    const fileInput = document.getElementById('m-file');
+    const progressContainer = document.getElementById('m-progress-container');
+    const progressBar = document.getElementById('m-progress-bar');
+    const progressText = document.getElementById('m-progress-text');
+
+    btn.disabled = true;
+    btn.innerText = 'جاري المعالجة...';
+
+    try {
+        let media_url = '';
+        let fileId = '';
+
+        if (fileInput.files.length > 0) {
+            progressContainer.classList.remove('hidden');
+            const uploadResult = await uploadFile(fileInput.files[0], (percent) => {
+                progressBar.style.width = percent + '%';
+                progressText.innerText = percent + '%';
+            });
+            media_url = uploadResult.url;
+            fileId = uploadResult.fileId;
+        }
+
+        const materialData = {
+            name: name,
+            type: type,
+            old_price: oldPriceVal,
+            new_price: newPriceVal
+        };
+
+        if (media_url) {
+            materialData.media_url = media_url;
+            materialData.file_id = fileId;
+        }
+
+        if (editMaterialId) {
+            await databases.updateDocument(config.DATABASE_ID, config.MATERIALS_COLLECTION_ID, editMaterialId, materialData);
+            alert('تم التحديث بنجاح');
+            editMaterialId = null;
+        } else {
+            await addMaterialToDB(materialData);
+            alert('تمت الإضافة بنجاح');
+        }
+
+        document.getElementById('add-material-form').reset();
+        btn.innerText = 'إضافة الخامة';
+        
+        setTimeout(() => {
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }, 1000);
+
+        await renderAdminMaterials();
+    } catch (error) {
+        alert('خطأ: ' + error.message);
+        progressContainer.classList.add('hidden');
+    }
+    btn.disabled = false;
+}
+
+function editMaterial(id, name, type, oldP, newP) {
+    editMaterialId = id;
+    document.getElementById('m-name').value = name;
+    document.getElementById('m-type').value = type === 'undefined' ? '' : type;
+    document.getElementById('m-old-price').value = oldP;
+    document.getElementById('m-new-price').value = newP === 'undefined' ? '' : newP;
+    
+    document.getElementById('m-file').value = '';
+    document.getElementById('btn-add-material').innerText = 'حفظ التعديلات';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function handleDeleteMaterial(id, fileId) {
+    if (confirm('هل تريد حذف هذه الخامة نهائياً؟')) {
+        const success = await deleteMaterialFromDB(id, fileId);
+        if (success) {
+            alert('تم الحذف بنجاح');
+            await renderAdminMaterials();
+        } else {
+            alert('فشل الحذف، حاول مرة أخرى');
+        }
+    }
+}
+
+async function renderAdminMaterials() {
+    const materials = await fetchMaterials();
+    const tbody = document.getElementById('admin-material-list');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">جاري التحميل...</td></tr>';
+
+    if (materials.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">لا توجد خامات.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    materials.forEach((m) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td data-label="الصورة">
+                ${m.media_url ? `<img src="${m.media_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">` : '-'}
+            </td>
+            <td data-label="الاسم">${m.name}</td>
+            <td data-label="النوع">${m.type || '-'}</td>
+            <td data-label="السعر القديم">${m.old_price}</td>
+            <td data-label="السعر الجديد">${m.new_price || '-'}</td>
+            <td data-label="إجراءات">
+                <button class="btn-edit" style="color: #3b82f6; margin-left: 15px; border:none; background:none; cursor:pointer;" onclick="editMaterial('${m.id}', '${m.name}', '${m.type}', '${m.old_price}', '${m.new_price}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-delete" style="border:none; background:none; cursor:pointer;" onclick="handleDeleteMaterial('${m.id}', '${m.file_id || ''}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }

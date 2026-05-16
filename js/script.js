@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch and Render Products
     await renderProducts();
     
+    // Fetch and Render Materials
+    await renderMaterials();
+    
     // Add Reveal Animations on Scroll
     initRevealAnimations();
 });
@@ -70,7 +73,7 @@ async function renderHeroSlides() {
                                <button onclick="toggleVideoMute(this, event)" style="position:absolute; bottom:20px; right:20px; z-index:30; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'"><i class="fas fa-volume-mute"></i></button>
                            </div>` 
 
-                        : `<div class="slide-image" style="background-image: url('${s.media_url}');"></div>`}
+                        : `<div class="slide-image" style="background-image: url('${s.media_url}');" role="img" aria-label="${s.title}"></div>`}
                     <div class="slide-overlay">
                         <h2>${s.title}</h2>
                         ${s.category_link ? `
@@ -87,11 +90,11 @@ async function renderHeroSlides() {
     // Initialize swiper AFTER slides are added to DOM
     initHeroSwiper();
 
-    // Explicitly play any videos in the slides
+    // Observe videos to play/pause automatically based on scroll
     const videos = wrapper.querySelectorAll('video');
     videos.forEach(video => {
         video.muted = true;
-        video.play().catch(err => console.log("Video play failed:", err));
+        videoObserver.observe(video);
     });
 }
 
@@ -210,15 +213,16 @@ async function renderProducts() {
                                     ${p.media_type === 'video' 
                                         ? `<video src="${p.media_url}" autoplay muted loop playsinline preload="auto" class="product-media" style="width:100%; height:100%; object-fit:cover; position: relative; z-index: 10; background: #000;"></video>
                                            <button onclick="toggleVideoMute(this, event)" style="position:absolute; bottom:15px; right:15px; z-index:30; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'"><i class="fas fa-volume-mute"></i></button>` 
-                                        : `<img src="${p.media_url}" alt="${p.title}" class="product-media" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`}
+                                        : `<img src="${p.media_url}" alt="${p.title || config.CATEGORIES[p.category] || 'صورة منتج ألمنيوم'}" class="product-media" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`}
                                 </div>
                                 <div class="product-info">
-                                  
-                                    <p class="product-desc">${p.description || 'جودة واتقان في العمل وتصاميم عصرية تناسب احتياجاتكم'}</p>
-                                    <div class="price-container">
-                                        ${(p.new_price !== undefined && p.new_price !== null && p.new_price !== '') 
-                                            ? `<span class="price-old">${p.old_price}</span><span class="price-new">${p.new_price}</span>` 
-                                            : `<span class="price-new">${p.old_price}</span>`}
+                                    <div class="desc-price-row" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 0;">
+                                        <p class="product-desc" style="margin: 0; flex: 1; font-size: 1.1rem; color: #fff; font-weight: 500; line-height: 1.4;">${p.description || 'جودة واتقان في العمل'}</p>
+                                        <div class="price-container" style="margin: 0; gap: 10px;">
+                                            ${(p.new_price !== undefined && p.new_price !== null && p.new_price !== '') 
+                                                ? `<span class="price-old" style="font-size: 1rem;">${p.old_price}</span><span class="price-new" style="font-size: 1.5rem;">${p.new_price}</span>` 
+                                                : `<span class="price-new" style="font-size: 1.5rem;">${p.old_price}</span>`}
+                                        </div>
                                     </div>
                                     <a href="javascript:void(0)" onclick="openOrderModal('${p.media_url}', '${p.title}', '${p.new_price || p.old_price}')" class="btn-order">اطلب الآن</a>
                                 </div>
@@ -228,14 +232,21 @@ async function renderProducts() {
                 `;
                 container.appendChild(section);
                 
-                // Add click listener for mobile to show order button
+                // Add click listener to show/hide order button
                 const grid = section.querySelector('.product-grid');
                 if (grid) {
                     grid.addEventListener('click', (e) => {
                         const card = e.target.closest('.product-card');
-                        if (card && window.innerWidth <= 768) {
-                            document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
-                            card.classList.add('active');
+                        if (card) {
+                            // Prevent toggle if clicking the order button
+                            if (e.target.closest('.btn-order')) return;
+                            
+                            if (card.classList.contains('active')) {
+                                card.classList.remove('active');
+                            } else {
+                                document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
+                                card.classList.add('active');
+                            }
                         }
                     });
                 }
@@ -245,16 +256,77 @@ async function renderProducts() {
         // Re-init reveal animations for newly added elements
         initRevealAnimations();
 
-        // Explicitly play any videos in the products
+        // Observe videos to play/pause automatically based on scroll
         const videos = container.querySelectorAll('video');
         videos.forEach(video => {
             video.muted = true;
-            video.play().catch(err => console.log("Video play failed:", err));
+            videoObserver.observe(video);
         });
 
     } catch (error) {
         // console.error("Render Error:", error);
         container.innerHTML = '<div style="text-align:center; padding: 100px 0;">حدث خطأ أثناء تحميل البيانات.</div>';
+    }
+}
+
+/**
+ * Render Materials (الخامات) from Database
+ */
+async function renderMaterials() {
+    const container = document.getElementById('product-container');
+    if (!container) return;
+
+    try {
+        const materials = await fetchMaterials();
+        
+        if (materials.length === 0) {
+            return; // لا نعرض القسم إذا لم تكن هناك خامات
+        }
+
+        const section = document.createElement('section');
+        section.id = 'materials';
+        section.className = 'category-container reveal';
+        section.innerHTML = `
+            <h2 class="section-title">خامات الألمنيوم</h2>
+            <div class="materials-table-wrapper" style="overflow-x: auto; padding: 0 15px;">
+                <table class="materials-table" style="width: 100%; border-collapse: separate; border-spacing: 0; background: var(--secondary); border-radius: 20px; overflow: hidden; border: 1px solid var(--glass-border); box-shadow: var(--shadow);">
+                    <thead>
+                        <tr style="background: var(--primary);">
+                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent); width: 80px;">الصورة</th>
+                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent);">اسم الخامة</th>
+                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent);">النوع</th>
+                            <th style="padding: 20px; text-align: right; color: var(--accent); font-size: 1.2rem; border-bottom: 2px solid var(--accent);">السعر (للمتر)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${materials.map((m, index) => `
+                            <tr style="background: ${index % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.2)'}; transition: background 0.3s;" onmouseover="this.style.background='rgba(197, 160, 89, 0.1)'" onmouseout="this.style.background='${index % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.2)'}'">
+                                <td style="padding: 10px 20px; border-bottom: 1px solid var(--glass-border);">
+                                    ${m.media_url ? `<img src="${m.media_url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);" alt="${m.name}">` : `<div style="width: 60px; height: 60px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);"><i class="fas fa-image"></i></div>`}
+                                </td>
+                                <td style="padding: 15px 20px; font-weight: 700; border-bottom: 1px solid var(--glass-border);">${m.name}</td>
+                                <td style="padding: 15px 20px; color: var(--text-muted); border-bottom: 1px solid var(--glass-border);">${m.type || '-'}</td>
+                                <td style="padding: 15px 20px; border-bottom: 1px solid var(--glass-border);">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        ${(m.new_price !== undefined && m.new_price !== null && m.new_price !== '') 
+                                            ? `<span style="color: rgba(255,255,255,0.3); text-decoration: line-through; font-size: 1rem;">${m.old_price}</span>
+                                               <span style="color: var(--accent); font-weight: 900; font-size: 1.3rem;">${m.new_price}</span>` 
+                                            : `<span style="color: var(--accent); font-weight: 900; font-size: 1.3rem;">${m.old_price}</span>`}
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.appendChild(section);
+        
+        // Re-init reveal animations
+        initRevealAnimations();
+        
+    } catch (error) {
+        // Silent fail for materials if error
     }
 }
 
@@ -277,7 +349,7 @@ function sendOrder(platform) {
     if (platform === 'whatsapp') {
         url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     } else if (platform === 'telegram') {
-        url = `https://t.me/Dherar_774?text=${encodeURIComponent(message)}`;
+        url = `https://t.me/motasim771?text=${encodeURIComponent(message)}`;
     }
 
     window.open(url, '_blank');
@@ -332,5 +404,14 @@ window.toggleVideoMute = function(btn, event) {
         }
     }
 };
-
-
+// Video Intersection Observer (Plays videos in viewport, pauses them when scrolled out)
+const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+            video.play().catch(err => console.log("Video play prevented:", err));
+        } else {
+            video.pause();
+        }
+    });
+}, { threshold: 0.3 }); // Triggers when 30% of the video becomes visible/hidden
