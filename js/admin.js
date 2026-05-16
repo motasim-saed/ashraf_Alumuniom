@@ -1,5 +1,4 @@
-// Admin Logic for Aluminum Company
-const ADMIN_PASSWORD = "124";
+// Admin Logic for Aluminum Company using Appwrite Auth
 let editId = null;
 let editSlideId = null;
 let editMaterialId = null;
@@ -194,31 +193,49 @@ async function handleDeleteSlide(id, fileId) {
 }
 
 
-function login() {
+async function login() {
+    const email = document.getElementById('admin-email').value;
     const pass = document.getElementById('admin-pass').value;
-    if (pass === ADMIN_PASSWORD) {
-        sessionStorage.setItem('isAdmin', 'true');
-        checkAuth();
-    } else {
-        document.getElementById('login-error').classList.remove('hidden');
+    const btn = event.currentTarget;
+    const errorMsg = document.getElementById('login-error');
+
+    btn.disabled = true;
+    btn.innerText = 'جاري التحقق...';
+    errorMsg.classList.add('hidden');
+
+    try {
+        await account.createEmailSession(email, pass);
+        await checkAuth();
+    } catch (error) {
+        errorMsg.innerText = 'فشل الدخول: ' + (error.message || 'خطأ غير معروف');
+        errorMsg.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'دخول';
     }
 }
 
-function logout() {
-    sessionStorage.removeItem('isAdmin');
-    window.location.reload();
+async function logout() {
+    try {
+        await account.deleteSession('current');
+        window.location.reload();
+    } catch (error) {
+        window.location.reload();
+    }
 }
 
-function checkAuth() {
-    const isAdmin = sessionStorage.getItem('isAdmin');
+async function checkAuth() {
     const loginSection = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
 
-    if (isAdmin === 'true') {
-        loginSection.classList.add('hidden');
-        dashboardSection.classList.remove('hidden');
-        renderAdminProducts();
-    } else {
+    try {
+        const user = await account.get();
+        if (user) {
+            loginSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            renderAdminProducts();
+        }
+    } catch (error) {
         loginSection.classList.remove('hidden');
         dashboardSection.classList.add('hidden');
     }

@@ -6,6 +6,7 @@ client
 
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
+const account = new Appwrite.Account(client);
 
 /**
  * Fetch all products from Appwrite
